@@ -33,10 +33,10 @@ class GettingStartedSuite extends PropSuite:
     assertEquals(fib(i), theFirst21FibonacciNumbers(i))
 
   test("PolymorphicFunctions.isSorted for sorted array case")(genSortedArray): array =>
-    assert(isSorted[Int](array, _ > _))
+    assert(isSorted[Int](array, _ >= _))
 
   test("PolymorphicFunctions.isSorted for unsorted array case")(genUnsortedArray): array =>
-    assert(!isSorted[Int](array, _ > _))
+    assert(!isSorted[Int](array, _ >= _))
 
   test("PolymorphicFunctions.curry")(Gen.int ** Gen.int):
     case n ** m =>

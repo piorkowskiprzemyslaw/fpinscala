@@ -39,7 +39,7 @@ object MyProgram:
     def inner(curr: Int, nxt: Int, i: Int): Int = 
       if (i == n) curr
       else inner(nxt, curr + nxt, i+1)
-      
+
     inner(0, 1, 0)
 
 
@@ -129,7 +129,14 @@ object PolymorphicFunctions:
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = 
+    def loop(idx: Int): Boolean =
+      if (idx >= as.length - 1) true
+      else if (gt(as(idx + 1), as(idx))) loop(idx+1)
+      else false
+
+    loop(0)
+      
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
