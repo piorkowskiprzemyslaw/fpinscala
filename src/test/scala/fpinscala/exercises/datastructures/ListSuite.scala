@@ -3,13 +3,16 @@ package fpinscala.exercises.datastructures
 import fpinscala.answers.testing.exhaustive.*
 import fpinscala.answers.testing.exhaustive.Gen.`**`
 import fpinscala.answers.testing.exhaustive.Prop.*
-import fpinscala.exercises.common.Common.{genShortNumber, genDoubleList as genDoubleSList, genIntList as genIntSList}
+import fpinscala.exercises.common.Common.genDoubleList as genDoubleSList
+import fpinscala.exercises.common.Common.genIntList as genIntSList
+import fpinscala.exercises.common.Common.genShortNumber
 import fpinscala.exercises.common.PropSuite
 import fpinscala.exercises.datastructures.*
 import fpinscala.exercises.datastructures.List.*
 
+import scala.List as SList
+import scala.Nil as SNil
 import scala.util.Try
-import scala.{List as SList, Nil as SNil}
 
 class ListSuite extends PropSuite:
   private val genIntList: Gen[List[Int]] = genIntSList.map(scalaListToList)
@@ -65,6 +68,13 @@ class ListSuite extends PropSuite:
     case list1 ** list2 =>
       assertEquals(
         List.appendViaFoldRight(list1, list2),
+        scalaListToList(listToScalaList(list1) ++ listToScalaList(list2))
+      )
+    
+  test("List.appendViaFoldLeft")(genIntList ** genIntList):
+    case list1 ** list2 =>
+      assertEquals(
+        List.appendViaFoldLeft(list1, list2),
         scalaListToList(listToScalaList(list1) ++ listToScalaList(list2))
       )
 

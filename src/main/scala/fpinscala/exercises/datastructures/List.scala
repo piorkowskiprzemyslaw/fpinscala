@@ -1,5 +1,7 @@
 package fpinscala.exercises.datastructures
 
+import scala.annotation.tailrec
+
 /** `List` data type, parameterized on a type, `A`. */
 enum List[+A]:
   /** A `List` data constructor representing the empty list. */
@@ -41,41 +43,71 @@ object List: // `List` companion object. Contains functions for creating and wor
       case Nil => acc
       case Cons(x, xs) => f(x, foldRight(xs, acc, f))
 
+  def foldRightViaFoldLeft[A, B](as: List[A], acc: B, f: (A, B) => B): B = foldLeft(reverse(as), acc, (b, a) => f(a, b))
+
   def sumViaFoldRight(ns: List[Int]): Int =
     foldRight(ns, 0, (x,y) => x + y)
 
   def productViaFoldRight(ns: List[Double]): Double =
     foldRight(ns, 1.0, _ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
-  def tail[A](l: List[A]): List[A] = ???
+  def tail[A](l: List[A]): List[A] = l match
+    case Nil => throw new RuntimeException("error")
+    case Cons(head, tail) => tail
+  
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  def setHead[A](l: List[A], h: A): List[A] = l match
+    case Nil => throw new RuntimeException("error")
+    case Cons(head, tail) => Cons(h, tail)
+  
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  @tailrec
+  def drop[A](l: List[A], n: Int): List[A] = if (n > 0)
+    l match
+      case Nil => Nil
+      case Cons(head, tail) => drop(tail, n - 1)
+    else
+      l
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
 
-  def init[A](l: List[A]): List[A] = ???
+  @tailrec
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match
+    case Nil => Nil
+    case Cons(head, tail) if f(head) => dropWhile(tail, f)
+    case _ => l
+  
 
-  def length[A](l: List[A]): Int = ???
+  def init[A](l: List[A]): List[A] = l match
+    case Nil => throw new RuntimeException("error")
+    case Cons(h, Nil) => Nil
+    case Cons(h, t) => Cons(h, init(t))
+  
 
-  def foldLeft[A,B](l: List[A], acc: B, f: (B, A) => B): B = ???
+  def length[A](l: List[A]): Int = foldRight(l, 0, (_, b) => b + 1)
 
-  def sumViaFoldLeft(ns: List[Int]): Int = ???
+  @tailrec
+  def foldLeft[A,B](l: List[A], acc: B, f: (B, A) => B): B = l match 
+    case Nil => acc
+    case Cons(h, t) => foldLeft(t, f(acc, h), f)
 
-  def productViaFoldLeft(ns: List[Double]): Double = ???
+  def sumViaFoldLeft(ns: List[Int]): Int = foldLeft(ns, 0, _ + _)
 
-  def lengthViaFoldLeft[A](l: List[A]): Int = ???
+  def productViaFoldLeft(ns: List[Double]): Double = foldLeft(ns, 1.0, _ * _)
 
-  def reverse[A](l: List[A]): List[A] = ???
+  def lengthViaFoldLeft[A](l: List[A]): Int = foldLeft(l, 0, (acc, _) => acc + 1)
 
-  def appendViaFoldRight[A](l: List[A], r: List[A]): List[A] = ???
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil, (acc: List[A], e: A) => Cons(e, acc))
 
-  def concat[A](l: List[List[A]]): List[A] = ???
+  def appendViaFoldRight[A](l: List[A], r: List[A]): List[A] = foldRight(l, r, (a, b) => Cons(a, b))
 
-  def incrementEach(l: List[Int]): List[Int] = ???
+  def appendViaFoldLeft[A](l: List[A], r: List[A]): List[A] = foldLeft(reverse(l), r, (b, a) => Cons(a, b))
 
-  def doubleToString(l: List[Double]): List[String] = ???
+  def concat[A](l: List[List[A]]): List[A] = foldRight(l, Nil: List[A], (a, b) => append(a, b))
+
+  def incrementEach(l: List[Int]): List[Int] = 
+    reverse(foldLeft(l, Nil: List[Int], (b: List[Int], a: Int) => Cons(a + 1, b)))
+
+  def doubleToString(l: List[Double]): List[String] = reverse(foldLeft(l, Nil: List[String], (b: List[String], a: Double) => Cons(a.toString(), b)))
 
   def map[A,B](l: List[A], f: A => B): List[B] = ???
 
