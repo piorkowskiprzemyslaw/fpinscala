@@ -1,6 +1,7 @@
 package fpinscala.exercises.datastructures
 
 import scala.annotation.tailrec
+import fpinscala.answers.testing.Gen.sortedProp
 
 /** `List` data type, parameterized on a type, `A`. */
 enum List[+A]:
@@ -109,16 +110,35 @@ object List: // `List` companion object. Contains functions for creating and wor
 
   def doubleToString(l: List[Double]): List[String] = reverse(foldLeft(l, Nil: List[String], (b: List[String], a: Double) => Cons(a.toString(), b)))
 
-  def map[A,B](l: List[A], f: A => B): List[B] = ???
+  def map[A,B](l: List[A], f: A => B): List[B] = reverse(foldLeft(l, Nil: List[B], (b: List[B], a: A) => Cons(f(a), b)))
 
-  def filter[A](as: List[A], f: A => Boolean): List[A] = ???
+  def filter[A](as: List[A], f: A => Boolean): List[A] = reverse(foldLeft(as, Nil: List[A], (b: List[A], a: A) => if (f(a)) Cons(a, b) else b))
 
-  def flatMap[A,B](as: List[A], f: A => List[B]): List[B] = ???
+  def flatMap[A,B](as: List[A], f: A => List[B]): List[B] = concat(map(as, f))
 
-  def filterViaFlatMap[A](as: List[A], f: A => Boolean): List[A] = ???
+  def filterViaFlatMap[A](as: List[A], f: A => Boolean): List[A] = flatMap(as, a => if(f(a)) List(a) else Nil)
 
-  def addPairwise(a: List[Int], b: List[Int]): List[Int] = ???
+  def addPairwise(a: List[Int], b: List[Int]): List[Int] = (a, b) match
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, addPairwise(t1, t2))
 
   // def zipWith - TODO determine signature
+  def zipWith[A, B, C](a: List[A], b: List[B], f: (A, B) => C): List[C] = (a, b) match
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2, f))
 
-  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
+  @tailrec
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = 
+    @tailrec
+    def check(out: List[A], in: List[A]): Boolean = (out, in) match 
+      case (Cons(h1, t1), Cons(h2, t2)) => h1 == h2 && check(t1, t2)
+      case (_, Nil) => true
+      case _ => false
+
+    sup match
+      case Nil => sub == Nil
+      case Cons(h, t) => check(sup, sub) || hasSubsequence(t, sub)
+
+  
