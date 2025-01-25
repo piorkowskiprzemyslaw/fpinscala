@@ -60,7 +60,7 @@ enum LazyList[+A]:
   def flatMap[B](f: A => LazyList[B]): LazyList[B] =
     this.foldRight(empty){(a,b) => f(a).append(b)}
 
-  def startsWith[B](s: LazyList[B]): Boolean = ???
+  def startsWith[B](s: LazyList[B]): Boolean = zipAll(s).takeWhile(_(1).isDefined).forAll((a1, a2) => a1 == a2)
 
   def mapViaUnfold[B](f: A => B): LazyList[B] =
     LazyList.unfold(this) {
@@ -93,6 +93,21 @@ enum LazyList[+A]:
       case (Cons(th, tt), Empty) => Some(((Some(th()), None), (tt(), Empty)))
       case _ => None
     }
+
+  lazy val tails: LazyList[LazyList[A]] = 
+    LazyList.unfold(this) {
+      case Empty => None
+      case Cons(h, t) => Some((cons(h(), t()), t()))
+    }.append(LazyList(empty))
+  
+  def hasSubsequence[B>:A](l: LazyList[B]): Boolean =
+    tails.exists(_.startsWith(l))
+  
+  def scanRight[B](init: B)(f: (A, => B) => B): LazyList[B] = foldRight((init, LazyList(init))) ((a, b0) =>
+      lazy val b1 = b0
+      val b2 = f(a, b1._1)
+      (b2, cons(b2, b1._2))
+  )._2
 
 
 object LazyList:
