@@ -38,13 +38,14 @@ import annotation.tailrec
 final class Actor[A](executor: ExecutorService)(handler: A => Unit, onError: Throwable => Unit = throw(_)):
   self =>
 
-  private val tail = new AtomicReference(new Node[A]())
+  private val tail: AtomicReference[Node[A]] = new AtomicReference(new Node[A]())
   private val suspended = new AtomicInteger(1)
-  private val head = new AtomicReference(tail.get)
+  private val head: AtomicReference[Node[A]] = new AtomicReference(tail.get)
 
   infix def !(a: A): Unit =
     val n = new Node(a)
-    head.getAndSet(n).lazySet(n)
+    val oldValue: Node[A] = head.getAndSet(n)
+    oldValue.lazySet(n)
     trySchedule()
 
   def contramap[B](f: B => A): Actor[B] =
